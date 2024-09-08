@@ -1479,17 +1479,22 @@ def balancedBlueprint(recipeName, blueprintTier):
     for r_j in r:
         R.append(M*r_j)
 
-    p(formatT(f"Balanced Blueprint for {recipeName}"))
-    p(formatT(f"Requires {M} {machine}"))
+    p("-"*80)
+    p(formatT(f"Balanced Blueprint for {recipeName} with Tier {blueprintTier} machines/belts/inserters"))
+    p("-"*80)
+    p(formatT(f"  Requires {M} {machine}"))
+    p("-"*30+"In"+"-"*30)
     for j in range(len(items)):
-        p(formatT(f"{R[j]}x {items[j][0]} / sec"))
-        p(f"Belts: " + format(B[j],".0f"))
-        p(formatT(f"Inserters: {I[j]}"))
+        p(formatT(f"    {R[j]}x {items[j][0]} / sec"))
+        p(f"      Belts: " + format(B[j],".0f"))
+        p(formatT(f"      Inserters: {I[j]}"))
+        outputIndex = len(items) - len(recipes[recipeName]["output"]) - 1
+        if(j==outputIndex):
+            p("-"*30+"Out"+"-"*30)
+        else: p("-"*40)
 
 
 
-balancedBlueprint("electronic_circuit", 1)
 
-# printRecipe("rocket_part")
+balancedBlueprint("satellite", 3)
 
-# p(machinesP["rocket_silo"][3])
