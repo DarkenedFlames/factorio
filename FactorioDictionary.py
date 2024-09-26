@@ -1334,8 +1334,3 @@ def machineTree(item, tier):
     return 0
         
 machineTree("electronic_circuit",1)
-
-
-
-
-
