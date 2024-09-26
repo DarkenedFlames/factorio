@@ -1,5 +1,9 @@
 import math
 from fractions import Fraction
+import numpy as np
+from collections import defaultdict
+
+
 recipes = {
  "wooden_chest": {
   "input": [("wood", 2)],
@@ -1173,328 +1177,165 @@ recipes = {
  }
 }
 
-machines = {
-    "assembling_machine_1": {
-        "module_slots": 0,
-        "crafting_speed": 0.5,
-        "energy_consumption": 75000,
-        "drain": 2500,
-        "energy_type": "electric",
-        "beacons": 12
-    },
-    "assembling_machine_2": {
-        "module_slots": 2,
-        "crafting_speed": 0.75,
-        "energy_consumption": 150000,
-        "drain": 5000,
-        "energy_type": "electric",
-        "beacons": 12
-    },
-    "assembling_machine_3": {
-        "module_slots": 4,
-        "crafting_speed": 1.25,
-        "energy_consumption": 375000,
-        "drain": 12500,
-        "energy_type": "electric",
-        "beacons": 12
-    },
-    "stone_furnace": {
-        "module_slots": 0,
-        "crafting_speed": 1,
-        "energy_consumption": 90000,
-        "energy_type": "burner",
-        "beacons": 0
-    },
-    "steel_furnace": {
-        "module_slots": 0,
-        "crafting_speed": 2,
-        "energy_consumption": 90000,
-        "energy_type": "burner",
-        "beacons": 0
-    },
-    "electric_furnace": {
-        "module_slots": 2,
-        "crafting_speed": 2,
-        "energy_consumption": 180000,
-        "drain": 6000,
-        "energy_type": "electric",
-        "beacons": 12
-    },
-    "chemical_plant": {
-        "module_slots": 3,
-        "crafting_speed": 1,
-        "energy_consumption": 210000,
-        "drain": 7000,
-        "energy_type": "electric",
-        "beacons": 12
-    },
-    "oil_refinery": {
-        "module_slots": 3,
-        "crafting_speed": 1,
-        "energy_consumption": 420000,
-        "drain": 14000,
-        "energy_type": "electric",
-        "beacons": 16
-    },
-    "rocket_silo": {
-        "module_slots": 4,
-        "crafting_speed": 1,
-        "energy_consumption": 4000000,
-        "drain": 0,
-        "energy_type": "electric",
-        "beacons": 20
-    },
-    "centrifuge": {
-        "module_slots": 2,
-        "crafting_speed": 1,
-        "energy_consumption": 350000,
-        "drain": 11600,
-        "energy_type": "electric",
-        "beacons": 12
-    }
-}
-
-machinesP = {
-    1: {
-        "assembling_machine": {
-            "name": "assembling_machine_1",
-            "crafting_speed": 0.5,
-            "crafting_type": ["crafting"],
-            "max_inserters": 12
-        },
-        "furnace": {
-            "name": "stone_furnace",
-            "crafting_speed": 1,
-            "crafting_type": ["smelting"],
-            "max_inserters": 8
-        },
-        "chemical_plant": {
-            "name": "chemical_plant",
-            "crafting_speed": 1,
-            "crafting_type": ["chemical"],
-            "max_inserters": 12
-        },
-        "oil_refinery": {
-            "name": "oil_refinery",
-            "crafting_speed": 1,
-            "crafting_type": ["refining"],
-            "max_inserters": 20
-        },
-        "centrifuge": {
-            "name": "centrifuge",
-            "crafting_speed": 1,
-            "crafting_type": ["nuclear"],
-            "max_inserters": 12
-        },
-        "rocket_silo": {
-            "name": "rocket_silo",
-            "crafting_speed": 1,
-            "crafting_type": ["rockets"],
-            "max_inserters": 36
-        }
-    },
-    2: {
-        "assembling_machine": {
-            "name": "assembling_machine_2",
-            "crafting_speed": 0.75,
-            "crafting_type": ["crafting", "liquid_crafting"],
-            "max_inserters": 12
-        },
-        "furnace": {
-            "name": "steel_furnace",
-            "crafting_speed": 2,
-            "crafting_type": ["smelting"],
-            "max_inserters": 8
-        },
-        "chemical_plant": {
-            "name": "chemical_plant",
-            "crafting_speed": 1,
-            "crafting_type": ["chemical"],
-            "max_inserters": 12
-        },
-        "oil_refinery": {
-            "name": "oil_refinery",
-            "crafting_speed": 1,
-            "crafting_type": ["refining"],
-            "max_inserters": 20
-        },
-        "centrifuge": {
-            "name": "centrifuge",
-            "crafting_speed": 1,
-            "crafting_type": ["nuclear"],
-            "max_inserters": 12
-        },
-        "rocket_silo": {
-            "name": "rocket_silo",
-            "crafting_speed": 1,
-            "crafting_type": ["rockets"],
-            "max_inserters": 36
-        }
-    },
-    3: {
-        "assembling_machine": {
-            "name": "assembling_machine_3",
-            "crafting_speed": 1.25,
-            "crafting_type": ["crafting", "liquid_crafting"],
-            "max_inserters": 12
-        },
-        "furnace": {
-            "name": "electric_furnace",
-            "crafting_speed": 2,
-            "crafting_type": ["smelting"],
-            "max_inserters": 8
-        },
-        "chemical_plant": {
-            "name": "chemical_plant",
-            "crafting_speed": 1,
-            "crafting_type": ["chemical"],
-            "max_inserters": 12
-        },
-        "oil_refinery": {
-            "name": "oil_refinery",
-            "crafting_speed": 1,
-            "crafting_type": ["refining"],
-            "max_inserters": 20
-        },
-        "centrifuge": {
-            "name": "centrifuge",
-            "crafting_speed": 1,
-            "crafting_type": ["nuclear"],
-            "max_inserters": 12
-        },
-        "rocket_silo": {
-            "name": "rocket_silo",
-            "crafting_speed": 1,
-            "crafting_type": ["rockets"],
-            "max_inserters": 36
-        }
-    }
-}
-
-fuel = {
-    "wood": 2000000,
-    "coal": 4000000,
-    "solid_fuel": 12000000,
-    "rocket_fuel": 100000000,
-    "nuclear_fuel": 1200000000,
-    "uranium_fuel_cell": 8000000000,
-}
-
 inserterSpeeds = [0.83, 2.31, 4.29]
 beltSpeeds = [15, 30, 45]
 
-
-
-def formatT(text):
-    return text.replace("_"," ").title()
-
-def p(text):
-    return print(text)
-
-def printRecipe(recipeName):
-    if recipeName not in recipes:
-        return p(f"Error: Invalid Item, try:\n{recipes.keys()}")
-
-    i = recipes[recipeName]["input"]
-    o = recipes[recipeName]["output"]
-    t = recipes[recipeName]["time"]
-    Y = recipes[recipeName]["type"]
-    p("Recipe for " + formatT(recipeName) + ":\n" + "  Ingredients:")
-
-    for ingredient, amount in i:
-        p(formatT(f"    {amount}x {ingredient}"))
-
-    p("  Products:")
-
-    for ingredient, amount in o:
-        p(formatT(f"    {amount}x {ingredient}"))
-
-    p(f"  Recipe Time: {t} seconds")
-
-    p("Crafted by: ")
-
-    for tier, type in machinesP.items():
-        for type, info in type.items():
-            if Y in info["crafting_type"]:
-                p(formatT(f"  Tier {tier}: " + info["name"] + " (Speed:" + str(info["crafting_speed"]) + ")"))
-
-def balancedBlueprint(recipeName, blueprintTier):
+machines = {
+    "crafting": {
+        1: {
+            "name": "assembling_machine_1",
+            "speed": 0.5
+        },
+        2: {
+            "name": "assembling_machine_2",
+            "speed": 0.75
+        },
+        3: {
+            "name": "assembling_machine_3",
+            "speed": 1.25
+        }
+    },
     
-    if recipeName not in recipes:
-        return p(f"Error: Invalid Item, try:\n{recipes.keys()}")
-
-    items = recipes[recipeName]["input"] + recipes[recipeName]["output"]
-    recipeTime = recipes[recipeName]["time"]
-    recipeCraftingType = recipes[recipeName]["type"]
-    beltSpeed = beltSpeeds[blueprintTier-1]
-    inserterSpeed = inserterSpeeds[blueprintTier-1]
-
-    machineFound = False
-    for machineType, machineInfo in machinesP[blueprintTier].items():
-        if recipeCraftingType in machineInfo["crafting_type"]:
-            machine = machineInfo["name"]
-            craftingSpeed = machineInfo["crafting_speed"]
-            maxInserters = machineInfo["max_inserters"]
-            machineFound = True
-    if machineFound == False:
-        return f"Error: Incompatible Item and Tier"
+    "liquid": {
+        2: {
+            "name": "assembling_machine_2",
+            "speed": 0.75
+        },
+        3: {
+            "name": "assembling_machine_3",
+            "speed": 1.25
+        }
+    },
     
+        "smelting": {
+        1: {
+            "name": "stone_furnace",
+            "speed": 1
+        },
+        2: {
+            "name": "steel_furnace",
+            "speed": 2
+        },
+        3: {
+            "name": "electric_furnace",
+            "speed": 2
+        }
+    }
+}
 
-    itemNames = []
-    itemAmounts = []
-    for ingredient, amount in items:
-        itemNames.append(ingredient)
-        itemAmounts.append(amount)
-
-
-    c = craftingSpeed
-    n = itemAmounts
-    t = recipeTime
-    b = beltSpeed
-    i = inserterSpeed
-
-    # Per second rates of each item
-    r = []
-    for n_j in n:
-        r.append(c*n_j/t)
-
-    # Inserters per each item
-    I = []
-    for r_j in r:
-        I.append(math.ceil(r_j/i))
-
-    # Number of Machines
-    M = 1
-    unitBelts = []
-    for r_j in r:
-        unitBelts.append(Fraction(r_j/b).limit_denominator().denominator)
-        for element in unitBelts:
-            M = math.lcm(M, element)
-
-    B = []
-    for r_j in r:
-        B.append(M*r_j/b)
-
-    R = []
-    for r_j in r:
-        R.append(M*r_j)
-
-    p("-"*80)
-    p(formatT(f"Balanced Blueprint for {recipeName} with Tier {blueprintTier} machines/belts/inserters"))
-    p("-"*80)
-    p(formatT(f"  Requires {M} {machine}"))
-    p("-"*30+"In"+"-"*30)
-    for j in range(len(items)):
-        p(formatT(f"    {R[j]}x {items[j][0]} / sec"))
-        p(f"      Belts: " + format(B[j],".0f"))
-        p(formatT(f"      Inserters: {I[j]}"))
-        outputIndex = len(items) - len(recipes[recipeName]["output"]) - 1
-        if(j==outputIndex):
-            p("-"*30+"Out"+"-"*30)
-        else: p("-"*40)
+#########################
 
 
+def buildTree(item):
+    total_items = defaultdict(float)
+
+    def recurse(item, quantity):
+        total_items[item] += quantity
+        if item in recipes:
+            output_quantity = recipes[item]["output"][0][1]
+            scaling_factor = quantity / output_quantity
+            for ingredient, amount in recipes[item]["input"]:
+                recurse(ingredient, amount * scaling_factor)
+
+    output_quantity = recipes[item]["output"][0][1]
+    recurse(item, output_quantity)
+    tree = [(k, v) for k, v in total_items.items()]
+
+    treeDict = {}
+    for k,v in tree:
+        if k in treeDict:
+            treeDict[k] += v
+        else:
+            treeDict[k] = v
+    return treeDict
+        
+# print(buildTree("electronic_circuit"))
+
+##########################
+
+def beltBlueprint(n, b, c, t, i):
+    n = np.array(n)
+    r = n * c / t
+    I = np.ceil(r / i)
+    b = np.full(len(r), b)
+    
+    nums = []
+    for f in b/r:
+      nums.append(
+        Fraction(f)
+        .limit_denominator()
+        .numerator
+      )
+    
+    M = math.lcm(*nums)
+    B = r * M / b
+    
+    return f"r: {r} \n I: {I} \n M: {M} \n B: {B}"
+
+# print(beltBlueprint([1,3,1], 15, 0.5, 0.5, 0.83))
+
+###########################
+
+def scaleUp(numberList):
+    denoms = []
+    LCM = 1
+    for number in numberList:
+        fraction = Fraction(number).limit_denominator()
+        denoms.append(fraction.denominator)
+    for denom in denoms:
+        LCM = math.lcm(denom, LCM)
+    return np.array(numberList)*LCM
+
+def craftingSpeedOf(item, tier):
+    if item not in recipes:
+        return 0
+    else:
+        type = recipes[item]["type"]
+        if type in ["chemical", "rockets", "refining", "nuclear"]:
+            return 1
+        elif type == "liquid" and tier == 1:
+            return 0
+        else:
+            return machines[type][tier]["speed"]
+        
 
 
-balancedBlueprint("satellite", 3)
+def machineTree(item, tier):
+    tree = buildTree(item)
+    machineRatios = []
+    machinesNeeded = []
+    itemCraftingSpeed = craftingSpeedOf(item, tier)
+    itemTime = recipes[item]["time"]
+    
+    if item not in recipes:
+        return "Error: No tree found; input is raw item or invalid item."
+    for eachSubItem in buildTree(item):
+        if eachSubItem in recipes:
+            n = tree[eachSubItem]
+            c = craftingSpeedOf(eachSubItem, tier)
+            t = recipes[eachSubItem]["time"]
+            
+            r=itemCraftingSpeed*n/itemTime
+            
+            oneMachineRate = c*recipes[eachSubItem]["output"][0][1]/t
+            
+            machineRatio = (Fraction(Fraction(r), Fraction(oneMachineRate))).limit_denominator()
+
+            machineRatios.append(machineRatio)
+            print(r)
+    
+    print(tree)
+    
+    for ratio in scaleUp(machineRatios):
+        machinesNeeded.append(ratio.numerator)
+    
+    print(machinesNeeded)
+        
+    return 0
+        
+machineTree("electronic_circuit",1)
+
+
+
+
 
