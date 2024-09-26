@@ -1230,15 +1230,12 @@ def buildTree(item):
     total_items = defaultdict(float)
 
     def recurse(item, quantity):
-        total_items[item] += quantity
-        if item in recipes:
-            output_quantity = recipes[item]["output"][0][1]
-            scaling_factor = quantity / output_quantity
-            for ingredient, amount in recipes[item]["input"]:
-                recurse(ingredient, amount * scaling_factor)
+        total_items[item] += quantity # add item and quantity to list
+        if item in recipes: # if item is raw, this will be false... need to change when we add raw items to 'if input found in item in recipes'
+            for subItem, subQuantity in recipes[item]["input"]: # repeat with all subitems, multiplying their amounts by the scaling factor
+                recurse(subItem, subQuantity * quantity / recipes[item]["output"][0][1])
 
-    output_quantity = recipes[item]["output"][0][1]
-    recurse(item, output_quantity)
+    recurse(item, recipes[item]["output"][0][1])
     tree = [(k, v) for k, v in total_items.items()]
 
     treeDict = {}
@@ -1334,3 +1331,8 @@ def machineTree(item, tier):
     return 0
         
 machineTree("electronic_circuit",1)
+
+
+# def machineCount(item, tier):
+#    for subItem in buildTree(item):
+        
