@@ -45,7 +45,7 @@ recipes = {
   "input": [("fast_transport_belt", 1), ("lubricant", 20), ("iron_gear_wheel", 10)],
   "output": [("express_transport_belt", 1)],
   "time": 0.5,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "underground_belt": {
   "input": [("transport_belt", 5), ("iron_plate", 10)],
@@ -63,7 +63,7 @@ recipes = {
   "input": [("fast_underground_belt", 2), ("lubricant", 40), ("iron_gear_wheel", 80)],
   "output": [("express_underground_belt", 2)],
   "time": 2,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "splitter": {
   "input": [("transport_belt", 4), ("iron_plate", 5), ("electronic_circuit", 5)],
@@ -81,7 +81,7 @@ recipes = {
   "input": [("fast_splitter", 1), ("lubricant", 80), ("iron_gear_wheel", 10), ("advanced_circuit", 10)],
   "output": [("express_splitter", 1)],
   "time": 2,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "burner_inserter": {
   "input": [("iron_plate", 1), ("iron_gear_wheel", 1)],
@@ -345,7 +345,7 @@ recipes = {
   "input": [("water", 100), ("iron_ore", 1), ("stone_brick", 5)],
   "output": [("concrete", 10)],
   "time": 10,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "hazard_concrete": {
   "input": [("concrete", 10)],
@@ -357,7 +357,7 @@ recipes = {
   "input": [("water", 100), ("concrete", 20), ("steel_plate", 1), ("iron_stick", 8)],
   "output": [("refined_concrete", 10)],
   "time": 15,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "refined_hazed_concrete": {
   "input": [("refined_concrete", 10)],
@@ -679,14 +679,14 @@ recipes = {
  },
  "uranium-235": {
   "input": [("uranium-238", 3)],
-  "output": 1,
+  "output": [("uranium-235", 1)],
   "time": 60,
   "productivity_allowed": 1,
   "type": "nuclear"
  },
  "uranium-238": {
   "input": [("uranium_ore", 10)],
-  "output": 1,
+  "output": [("uranium-238", 1)],
   "time": 12,
   "productivity_allowed": 1,
   "type": "nuclear"
@@ -738,7 +738,7 @@ recipes = {
   "output": [("processing_unit", 1)],
   "time": 10,
   "productivity_allowed": 1,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "engine_unit": {
   "input": [("pipe", 2), ("steel_plate", 1), ("iron_gear_wheel", 1)],
@@ -752,7 +752,7 @@ recipes = {
   "output": [("electric_engine_unit", 1)],
   "time": 10,
   "productivity_allowed": 1,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "flying_robot_frame": {
   "input": [("steel_plate", 1), ("battery", 2), ("electronic_circuit", 3), ("electric_engine_unit", 1)],
@@ -787,7 +787,7 @@ recipes = {
   "output": [("rocket_fuel", 1)],
   "time": 30,
   "productivity_allowed": 1,
-  "type": "liquid_crafting"
+  "type": "liquid"
  },
  "nuclear_fuel": {
   "input": [("uranium-235", 1), ("rocket_fuel", 1)],
@@ -1180,6 +1180,49 @@ recipes = {
 inserterSpeeds = [0.83, 2.31, 4.29]
 beltSpeeds = [15, 30, 45]
 
+machineSpeeds = {
+    "crafting": {
+        1: 0.5,
+        2: 0.75,
+        3: 1.25
+    },
+    "liquid": {
+        2: 0.75,
+        3: 1.25
+    },
+    "smelting": {
+        1: 1,
+        2: 2,
+        3: 2
+    },
+    "chemical": {
+        1: 1,
+        2: 1,
+        3: 1
+    },
+    "rockets": {
+        1: 1,
+        2: 1,
+        3: 1
+    },
+    "refining": {
+        1: 1,
+        2: 1,
+        3: 1
+    },
+    "mining": {
+        1: 1,
+        2: 1,
+        3: 1
+    },
+    "nuclear": {
+        1: 1,
+        2: 1,
+        3: 1
+    }
+}
+
+
 machines = {
     "crafting": {
         1: {
@@ -1225,28 +1268,36 @@ machines = {
 
 #########################
 
+def craftingSpeedOf(item, tier):
+    type = recipes[item]["type"]
+    return machineSpeeds[type][tier]
+            
+def craftingTimeOf(item):
+    return recipes[item]["time"]
+        
+def outputCountOf(item):
+    return recipes[item]["output"][0][1]
+
+def listLCD(floats):
+    denominators = [Fraction(f).limit_denominator().denominator for f in floats]
+    return np.lcm.reduce(denominators)
+
+
 
 def buildTree(item):
     total_items = defaultdict(float)
 
     def recurse(item, quantity):
-        total_items[item] += quantity # add item and quantity to list
-        if item in recipes: # if item is raw, this will be false... need to change when we add raw items to 'if input found in item in recipes'
-            for subItem, subQuantity in recipes[item]["input"]: # repeat with all subitems, multiplying their amounts by the scaling factor
-                recurse(subItem, subQuantity * quantity / recipes[item]["output"][0][1])
+        if item in recipes:
+            total_items[item] += quantity 
+            if "input" in recipes[item]:
+                for subItem, subQuantity in recipes[item]["input"]: 
+                    recurse(subItem, subQuantity * quantity / outputCountOf(item))
 
-    recurse(item, recipes[item]["output"][0][1])
-    tree = [(k, v) for k, v in total_items.items()]
-
-    treeDict = {}
-    for k,v in tree:
-        if k in treeDict:
-            treeDict[k] += v
-        else:
-            treeDict[k] = v
-    return treeDict
+    recurse(item, outputCountOf(item))
+    return dict(total_items)
         
-# print(buildTree("electronic_circuit"))
+#print(buildTree("electronic_circuit"))
 
 ##########################
 
@@ -1269,70 +1320,24 @@ def beltBlueprint(n, b, c, t, i):
     
     return f"r: {r} \n I: {I} \n M: {M} \n B: {B}"
 
-# print(beltBlueprint([1,3,1], 15, 0.5, 0.5, 0.83))
 
-###########################
+def machineTreePlus(item, tier):
+    t = np.array([])
+    c = np.array([])
+    a = np.array([])
+    n = np.array(list(buildTree(item).values()))
+    tree = {}
+    for subItem in buildTree(item):
+        if tier == 1 and recipes[subItem]["type"] == "liquid":
+            return "Some item uses liquid and can't be crafted by tier 1"
+        print(recipes[subItem]["type"])
+        a = np.append(a, outputCountOf(subItem))
+        c = np.append(c, craftingSpeedOf(subItem, tier))
+        t = np.append(t, craftingTimeOf(subItem))
+    R = n*c[0]*t/(a*c*t[0])
+    M = R * listLCD(R)
+    for key, value in zip(buildTree(item).keys(), M):
+        tree[key] = int(value)
+    return tree
 
-def scaleUp(numberList):
-    denoms = []
-    LCM = 1
-    for number in numberList:
-        fraction = Fraction(number).limit_denominator()
-        denoms.append(fraction.denominator)
-    for denom in denoms:
-        LCM = math.lcm(denom, LCM)
-    return np.array(numberList)*LCM
-
-def craftingSpeedOf(item, tier):
-    if item not in recipes:
-        return 0
-    else:
-        type = recipes[item]["type"]
-        if type in ["chemical", "rockets", "refining", "nuclear"]:
-            return 1
-        elif type == "liquid" and tier == 1:
-            return 0
-        else:
-            return machines[type][tier]["speed"]
-        
-
-
-def machineTree(item, tier):
-    tree = buildTree(item)
-    machineRatios = []
-    machinesNeeded = []
-    itemCraftingSpeed = craftingSpeedOf(item, tier)
-    itemTime = recipes[item]["time"]
-    
-    if item not in recipes:
-        return "Error: No tree found; input is raw item or invalid item."
-    for eachSubItem in buildTree(item):
-        if eachSubItem in recipes:
-            n = tree[eachSubItem]
-            c = craftingSpeedOf(eachSubItem, tier)
-            t = recipes[eachSubItem]["time"]
-            
-            r=itemCraftingSpeed*n/itemTime
-            
-            oneMachineRate = c*recipes[eachSubItem]["output"][0][1]/t
-            
-            machineRatio = (Fraction(Fraction(r), Fraction(oneMachineRate))).limit_denominator()
-
-            machineRatios.append(machineRatio)
-            print(r)
-    
-    print(tree)
-    
-    for ratio in scaleUp(machineRatios):
-        machinesNeeded.append(ratio.numerator)
-    
-    print(machinesNeeded)
-        
-    return 0
-        
-machineTree("electronic_circuit",1)
-
-
-# def machineCount(item, tier):
-#    for subItem in buildTree(item):
-        
+print(machineTreePlus("advanced_circuit", 1))
